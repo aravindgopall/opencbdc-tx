@@ -56,6 +56,11 @@ namespace cbdc::sentinel {
             if(ep == m_opts.m_sentinel_endpoints[m_sentinel_id]) {
                 continue;
             }
+            m_logger->info("Connecting to",
+                           ep.first,
+                           ":",
+                           ep.second,
+                           "...");
             auto client = std::make_unique<sentinel::rpc::client>(
                 std::vector<network::endpoint_t>{ep},
                 m_logger);
