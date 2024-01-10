@@ -64,9 +64,11 @@ namespace cbdc::sentinel {
             auto client = std::make_unique<sentinel::rpc::client>(
                 std::vector<network::endpoint_t>{ep},
                 m_logger);
-            if(!client->init()) {
+            if(!client->init(false)) {
                 m_logger->error("Failed to start sentinel client");
                 return false;
+            } else {
+                m_logger->info("started sentinel client by ignoring the tcp error");
             }
             m_sentinel_clients.emplace_back(std::move(client));
         }
