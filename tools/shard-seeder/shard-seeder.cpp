@@ -74,7 +74,7 @@ auto main(int argc, char** argv) -> int {
     cbdc::transaction::wallet wal;
     wal.seed_readonly(witness_commitment, utxo_val, 0, num_utxos);
 
-    auto shard_range
+    int shard_range
         = (std::numeric_limits<cbdc::config::shard_range_t::first_type>::max()
            + 1)
         / num_shards;
