@@ -8,6 +8,7 @@
 #include <array>
 #include <cstring>
 #include <unistd.h>
+#include <iostream>
 
 namespace cbdc::network {
     auto tcp_socket::connect(const endpoint_t& ep) -> bool {
@@ -19,6 +20,7 @@ namespace cbdc::network {
         m_addr = remote_address;
         m_port = remote_port;
         auto res0 = get_addrinfo(remote_address, remote_port);
+        std::cout << "get_addrinfo res: " << res0 << std::endl;
         if(!res0) {
             return false;
         }
@@ -38,6 +40,7 @@ namespace cbdc::network {
 
             break;
         }
+        std::cout << "m_sock_fd " << m_sock_fd << std::endl;
 
         m_connected = m_sock_fd != -1;
 

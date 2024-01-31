@@ -52,9 +52,6 @@ namespace cbdc::sentinel {
 
         m_shard_dist = decltype(m_shard_dist)(0, m_shard_data.size() - 1);
 
-
-        m_dist = decltype(m_dist)(0, m_sentinel_clients.size() - 1);
-
         auto rpc_server = std::make_unique<
             cbdc::rpc::tcp_server<cbdc::rpc::async_server<request, response>>>(
             m_opts.m_sentinel_endpoints[m_sentinel_id]);
@@ -62,7 +59,10 @@ namespace cbdc::sentinel {
             m_logger->error("Failed to start sentinel RPC server");
             return false;
         }
-        m_logger->error("started sentinel RPC server");
+
+        auto epp = m_opts.m_sentinel_endpoints[m_sentinel_id];
+
+        m_logger->error("started sentinel RPC server at ", epp.first, ":", epp.second, "...");
 
         m_rpc_server = std::make_unique<decltype(m_rpc_server)::element_type>(
             this,
@@ -82,13 +82,14 @@ namespace cbdc::sentinel {
                 m_logger);
             if(!client->init()) {
                 m_logger->error("Failed to start sentinel client");
-                return false;
+                //return false;
             }
             //else {
                 //m_logger->info("started sentinel client by ignoring the tcp error");
             //}
             m_sentinel_clients.emplace_back(std::move(client));
         }
+        m_dist = decltype(m_dist)(0, m_sentinel_clients.size() - 1);
 
 
         return true;
