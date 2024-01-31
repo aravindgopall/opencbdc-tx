@@ -52,26 +52,6 @@ namespace cbdc::sentinel {
 
         m_shard_dist = decltype(m_shard_dist)(0, m_shard_data.size() - 1);
 
-        for(const auto& ep : m_opts.m_sentinel_endpoints) {
-            if(ep == m_opts.m_sentinel_endpoints[m_sentinel_id]) {
-                continue;
-            }
-            m_logger->info("Connecting to",
-                           ep.first,
-                           ":",
-                           ep.second,
-                           "...");
-            auto client = std::make_unique<sentinel::rpc::client>(
-                std::vector<network::endpoint_t>{ep},
-                m_logger);
-            if(!client->init(false)) {
-                m_logger->error("Failed to start sentinel client");
-                return false;
-            } else {
-                m_logger->info("started sentinel client by ignoring the tcp error");
-            }
-            m_sentinel_clients.emplace_back(std::move(client));
-        }
 
         m_dist = decltype(m_dist)(0, m_sentinel_clients.size() - 1);
 
@@ -86,6 +66,29 @@ namespace cbdc::sentinel {
         m_rpc_server = std::make_unique<decltype(m_rpc_server)::element_type>(
             this,
             std::move(rpc_server));
+
+        for(const auto& ep : m_opts.m_sentinel_endpoints) {
+            if(ep == m_opts.m_sentinel_endpoints[m_sentinel_id]) {
+                continue;
+            }
+            m_logger->info("Connecting to",
+                           ep.first,
+                           ":",
+                           ep.second,
+                           "...");
+            auto client = std::make_unique<sentinel::rpc::client>(
+                std::vector<network::endpoint_t>{ep},
+                m_logger);
+            if(!client->init()) {
+                m_logger->error("Failed to start sentinel client");
+                return false;
+            }
+            //else {
+                //m_logger->info("started sentinel client by ignoring the tcp error");
+            //}
+            m_sentinel_clients.emplace_back(std::move(client));
+        }
+
 
         return true;
     }

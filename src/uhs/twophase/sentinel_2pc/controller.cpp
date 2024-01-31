@@ -61,23 +61,7 @@ namespace cbdc::sentinel_2pc {
             }
         }
 
-        for(const auto& ep : m_opts.m_sentinel_endpoints) {
-            if(ep == m_opts.m_sentinel_endpoints[m_sentinel_id]) {
-                continue;
-            }
-            auto client = std::make_unique<sentinel::rpc::client>(
-                std::vector<network::endpoint_t>{ep},
-                m_logger);
-            if(!client->init(false)) {
-                m_logger->warn("Failed to start sentinel client");
-            }
-            m_sentinel_clients.emplace_back(std::move(client));
-        }
-
         constexpr size_t dist_lower_bound = 0;
-        const size_t dist_upper_bound
-            = m_sentinel_clients.empty() ? 0 : m_sentinel_clients.size() - 1;
-        m_dist = decltype(m_dist)(dist_lower_bound, dist_upper_bound);
 
         auto rpc_server = std::make_unique<cbdc::rpc::tcp_server<
             cbdc::rpc::async_server<cbdc::sentinel::request,
@@ -91,6 +75,23 @@ namespace cbdc::sentinel_2pc {
         m_rpc_server = std::make_unique<decltype(m_rpc_server)::element_type>(
             this,
             std::move(rpc_server));
+
+        for(const auto& ep : m_opts.m_sentinel_endpoints) {
+            if(ep == m_opts.m_sentinel_endpoints[m_sentinel_id]) {
+                continue;
+            }
+            auto client = std::make_unique<sentinel::rpc::client>(
+                std::vector<network::endpoint_t>{ep},
+                m_logger);
+            if(!client->init()) {
+                m_logger->error("Failed to start sentinel client");
+                return false;
+            }
+            m_sentinel_clients.emplace_back(std::move(client));
+        }
+        const size_t dist_upper_bound
+            = m_sentinel_clients.empty() ? 0 : m_sentinel_clients.size() - 1;
+        m_dist = decltype(m_dist)(dist_lower_bound, dist_upper_bound);
 
         return true;
     }
