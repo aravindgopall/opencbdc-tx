@@ -69,12 +69,9 @@ namespace cbdc::sentinel_2pc {
             m_opts.m_sentinel_endpoints[m_sentinel_id]);
         if(!rpc_server->init()) {
             m_logger->error("Failed to start sentinel RPC server");
-            return false;
+        } else {
+          m_logger->error("Started sentinel RPC server");
         }
-
-        m_rpc_server = std::make_unique<decltype(m_rpc_server)::element_type>(
-            this,
-            std::move(rpc_server));
 
         for(const auto& ep : m_opts.m_sentinel_endpoints) {
             if(ep == m_opts.m_sentinel_endpoints[m_sentinel_id]) {
@@ -83,15 +80,20 @@ namespace cbdc::sentinel_2pc {
             auto client = std::make_unique<sentinel::rpc::client>(
                 std::vector<network::endpoint_t>{ep},
                 m_logger);
-            if(!client->init()) {
+            if(!client->init(false)) {
                 m_logger->error("Failed to start sentinel client");
-                return false;
+            } else {
+              m_logger->error("Ignoring the sentinel client");
             }
             m_sentinel_clients.emplace_back(std::move(client));
         }
         const size_t dist_upper_bound
             = m_sentinel_clients.empty() ? 0 : m_sentinel_clients.size() - 1;
         m_dist = decltype(m_dist)(dist_lower_bound, dist_upper_bound);
+
+        m_rpc_server = std::make_unique<decltype(m_rpc_server)::element_type>(
+            this,
+            std::move(rpc_server));
 
         return true;
     }
