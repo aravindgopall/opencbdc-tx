@@ -33,7 +33,7 @@ namespace cbdc::sentinel {
         m_shard_data.reserve(m_opts.m_shard_endpoints.size());
         for(size_t i{0}; i < m_opts.m_shard_endpoints.size(); i++) {
             const auto& shard = m_opts.m_shard_endpoints[i];
-            m_logger->info("Connecting to",
+            m_logger->error("Connecting to",
                            shard.first,
                            ":",
                            shard.second,
@@ -62,6 +62,7 @@ namespace cbdc::sentinel {
             m_logger->error("Failed to start sentinel RPC server");
             return false;
         }
+        m_logger->error("started sentinel RPC server");
 
         m_rpc_server = std::make_unique<decltype(m_rpc_server)::element_type>(
             this,
@@ -71,7 +72,7 @@ namespace cbdc::sentinel {
             if(ep == m_opts.m_sentinel_endpoints[m_sentinel_id]) {
                 continue;
             }
-            m_logger->info("Connecting to",
+            m_logger->error("Connecting to",
                            ep.first,
                            ":",
                            ep.second,
